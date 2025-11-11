@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/auth_service
+    username: postgres
+    password: root
+    jpa:
+      hibernate:
+        ddl-auto: update
+      database: postgresql
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8092

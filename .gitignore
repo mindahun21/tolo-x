@@ -1,0 +1,11 @@
+### Java ###
+target/
+*.log
+
+### IntelliJ ###
+.idea/
+*.iml
+out/
+
+### Maven ###
+.mvn/timing.properties

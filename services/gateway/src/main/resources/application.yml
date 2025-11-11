@@ -1,0 +1,23 @@
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: "http://localhost:5173"
+                allowed-methods:
+                  - "GET"
+                  - "POST"
+                  - "PUT"
+                  - "DELETE"
+                  - "OPTIONS"
+                  - "HEAD"
+                  - "PATCH"
+                allowed-headers: "*"
+                allow-credentials: true

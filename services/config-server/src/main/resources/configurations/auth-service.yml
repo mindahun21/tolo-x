@@ -1,0 +1,51 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 494094989721-c40huttg8kd92b7gaov7o1pcerhqagfq.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "http://localhost:8222/oauth2/callback/{registrationId}"
+        provider:
+          google:
+            authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth"
+            token-uri: "https://oauth2.googleapis.com/token"
+            user-info-uri: "https://openidconnect.googleapis.com/v1/userinfo"
+            user-name-attribute: sub
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/auth_service
+    username: postgres
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+jwt:
+  secret:
+    key: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+  expiration:
+    access:
+      ms: 900000
+    refresh:
+      ms: 604800000
+
+app:
+  tokenSecret: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+  tokenExpirationMsec: 900000
+  authorizedRedirectUris:
+    - http://localhost:5173/oauth2/redirect
+
+server:
+  port: 8091
+
+#debug: true

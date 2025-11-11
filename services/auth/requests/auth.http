@@ -1,0 +1,34 @@
+@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiUk9MRV9VU0VSIn1dLCJzdWIiOiJtaW5kYWh1bjBAZ21haWwuY29tIiwiaWF0IjoxNzYxMTYzOTAxLCJleHAiOjE3NjExNjQ4MDF9.4GSOFjS9ZIJOXIOlS8ZYI_vHPJoyUnBQgjF4RAIbDCo
+
+###
+POST http://localhost:8080/register
+Content-Type: application/json
+
+{
+  "email": "johndoe123@gmail.com",
+  "name": "john doe",
+  "password": "johndoe123"
+}
+
+###
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "email": "ethiotest10@gmail.com",
+  "password": "mindahun1234"
+}
+
+###
+GET http://localhost:8080/check
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/users/email/mindahunxps@gmail.com
+Content-Type: application/json
+
+
+###
+GET http://localhost:8222/demo/user/mindahunxps@gmail.com
+Content-Type: application/json
