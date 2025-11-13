@@ -16,3 +16,7 @@ spring:
 server:
   port: 8222
 
+jwt:
+  secret:
+    key: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+

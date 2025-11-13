@@ -1,8 +1,10 @@
 package com.mindahun.auth.security;
 
-import com.mindahun.auth.repository.UserRepository;
+import com.mindahun.auth.client.UserClient;
+import com.mindahun.auth.dto.UserDto;
 import com.mindahun.auth.service.CustomUserDetails;
 import com.mindahun.auth.utils.JwtUtil;
+import feign.FeignException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,7 +28,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
+    private final UserClient userClient;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -37,8 +39,20 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 String userEmail = jwtUtil.extractUsername(token);
 
                 if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userRepository.findByEmail(userEmail).map(CustomUserDetails::new).orElse(null);
-                    if(userDetails != null && jwtUtil.validateToken(token,userDetails)) {
+                    UserDto user;
+                    try{
+                       user = userClient.getUserByEmail(userEmail);
+
+                    }catch (FeignException.NotFound e){
+                        log.warn("User not found for email: {}", userEmail);
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write("{\"error\":\"User not found\"}");
+                        return;
+                    }
+
+                    UserDetails userDetails = new CustomUserDetails(user);
+                    if(jwtUtil.validateToken(token,userDetails)) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);

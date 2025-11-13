@@ -4,7 +4,7 @@ import com.mindahun.auth.exception.OAuth2AuthenticationProcessingException;
 
 import java.util.Map;
 
-import static com.mindahun.auth.models.AuthProvider.GOOGLE;
+import static com.mindahun.auth.dto.AuthProvider.GOOGLE;
 
 public class OAuth2UserInfoFactory {
     public static OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {

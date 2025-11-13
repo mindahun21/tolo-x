@@ -1,11 +1,16 @@
 package com.tolox.user.controllers;
 
 
+import com.tolox.user.dto.UserUpdateDto;
 import com.tolox.user.services.UserService;
 import com.tolox.user.models.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -20,10 +25,20 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping()
-    public ResponseEntity<User> save(@RequestBody User user){
-        return ResponseEntity.ok(userService.save(user));
+    @PatchMapping()
+    public ResponseEntity<User> update(@RequestBody UserUpdateDto user){
+        return ResponseEntity.ok(userService.update(user));
     }
 
+    @PostMapping()
+    public ResponseEntity<User> create(@RequestBody User user){
+        return ResponseEntity.ok(userService.create(user));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping()
+    public ResponseEntity<List<User>> findAll(){
+        return ResponseEntity.ok(userService.findAll());
+    }
 
 }

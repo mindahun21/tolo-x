@@ -1,4 +1,4 @@
-package com.mindahun.auth.models;
+package com.mindahun.auth.dto;
 
 public enum AuthProvider {
     GOOGLE,

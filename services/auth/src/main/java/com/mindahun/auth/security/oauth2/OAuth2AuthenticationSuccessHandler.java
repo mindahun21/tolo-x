@@ -1,9 +1,8 @@
 package com.mindahun.auth.security.oauth2;
 
+import com.mindahun.auth.client.UserClient;
 import com.mindahun.auth.config.PropertiesConfig;
-import com.mindahun.auth.models.User;
-import com.mindahun.auth.repository.RoleRepository;
-import com.mindahun.auth.repository.UserRepository;
+import com.mindahun.auth.dto.UserDto;
 import com.mindahun.auth.service.CustomUserDetails;
 import com.mindahun.auth.utils.CookieUtils;
 import com.mindahun.auth.utils.JwtUtil;
@@ -34,9 +33,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final PropertiesConfig propertiesConfig;
     private final JwtUtil jwtUtil;
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final AuthenticationFailureHandler failureHandler;
+    private final UserClient userClient;
 
 
     @Override
@@ -55,12 +53,21 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             if(principal instanceof CustomUserDetails customUserDetails){
                 userDetails = customUserDetails;
             }else if (principal instanceof OidcUser oidcUser){
+                try{
+                    UserDto user = userClient.getUserByEmail((String) oidcUser.getAttributes().get("email"));
+                    userDetails = CustomUserDetails.from(user,oidcUser.getAttributes(), oidcUser.getIdToken(), oidcUser.getUserInfo());
 
-                User user = userRepository.findByEmail((String) oidcUser.getAttributes().get("email")).orElseThrow(()-> new AuthenticationServiceException("User not found with email: " + oidcUser.getAttributes().get("email")));
-                userDetails = CustomUserDetails.from(user,oidcUser.getAttributes(), oidcUser.getIdToken(), oidcUser.getUserInfo());
+                }catch (Exception e){
+                    throw new AuthenticationServiceException("User not found with email: " + oidcUser.getAttributes().get("email"));
+                }
             }else if (principal instanceof OAuth2User oauth2User){
-                User user = userRepository.findByEmail((String) oauth2User.getAttributes().get("email")).orElseThrow(()-> new AuthenticationServiceException("User not found with email: " + oauth2User.getAttributes().get("email")));
-                userDetails = CustomUserDetails.from(user, oauth2User.getAttributes());
+                try{
+                    UserDto user = userClient.getUserByEmail((String) oauth2User.getAttributes().get("email"));
+                    userDetails = CustomUserDetails.from(user, oauth2User.getAttributes());
+
+                }catch (Exception e){
+                    throw new AuthenticationServiceException("User not found with email: " + oauth2User.getAttributes().get("email"));
+                }
             }else{
 
                 throw new AuthenticationServiceException("Invalid user principal type");
@@ -73,7 +80,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 Cookie cookie = new Cookie("access_token", token);
                 cookie.setHttpOnly(true);
                 cookie.setPath("/");
-                cookie.setMaxAge((int) propertiesConfig.getTokenExpirationMsec());
+                cookie.setMaxAge((int) propertiesConfig.getTokenExpirationMsec() / 1000);
                 response.addCookie(cookie);
 
 
