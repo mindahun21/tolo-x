@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,10 +36,18 @@ public class UserController {
         return ResponseEntity.ok(userService.create(user));
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<List<User>> findAll(){
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication authentication){
+        if(authentication != null && authentication.isAuthenticated()){
+            return ResponseEntity.ok(authentication);
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated.");
     }
 
 }

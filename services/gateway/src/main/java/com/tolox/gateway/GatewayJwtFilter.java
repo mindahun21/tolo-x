@@ -13,6 +13,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class GatewayJwtFilter implements GlobalFilter, Ordered {
@@ -45,7 +47,18 @@ public class GatewayJwtFilter implements GlobalFilter, Ordered {
 
         String rolesHeader;
         if(rolesObj instanceof Collection){
-            rolesHeader = String.join(",",((Collection<?>) rolesObj).stream().map(Object::toString).toList());
+            rolesHeader = ((Collection<?>) rolesObj)
+                            .stream().
+                            map(o->{
+                                if(o instanceof Map<?,?> map){
+                                    Object a = map.get("authority");
+                                    return a == null ? "" : a.toString();
+                                }
+                                return o.toString();
+
+                            })
+                    .collect(Collectors.joining(","));
+
         }else{
             rolesHeader = rolesObj == null ? "" : rolesObj.toString();
         }

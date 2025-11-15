@@ -27,7 +27,7 @@ public class UserService {
 
     public void saveNewUser(RegistrationRequest registrationRequest) {
         try{
-            RoleDto defaultRole = roleClient.getRoleByName("ROLE_USER");
+            RoleDto defaultRole = roleClient.getRoleByName("USER");
             UserDto user = new UserDto();
             user.setEmail(registrationRequest.getEmail());
             user.setName(registrationRequest.getName());

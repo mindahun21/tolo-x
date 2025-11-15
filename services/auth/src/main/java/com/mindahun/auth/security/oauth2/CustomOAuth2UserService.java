@@ -80,7 +80,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private UserDto registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
         RoleDto defaultRole;
         try{
-            defaultRole = roleClient.getRoleByName("ROLE_USER");
+            defaultRole = roleClient.getRoleByName("USER");
 
         }catch (FeignException.NotFound ex){
             throw  new RuntimeException("Default role not found");

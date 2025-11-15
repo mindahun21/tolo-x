@@ -1,13 +1,13 @@
-@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiUk9MRV9VU0VSIn1dLCJzdWIiOiJqb2huZG9lMTIzQGdtYWlsLmNvbSIsImlhdCI6MTc2MzA1MjY5MiwiZXhwIjoxNzYzMDUzNTkyfQ.Yw0jUMM9Z95chczuXrWIwcdkeoDAwzw2-YPSjdxTWSw
+@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiVVNFUiJ9XSwic3ViIjoiam9obmRvZTEyM0BnbWFpbC5jb20iLCJpYXQiOjE3NjMyMDQ0NjIsImV4cCI6MTc2MzIwNTM2Mn0.c2fmRQskY-Hbl94A3ngXmJzEHoNh4MSI0yhwtl2qvT4
 
 ###
 POST http://localhost:8222/auth/register
 Content-Type: application/json
 
 {
-  "email": "johndoe123@gmail.com",
+  "email": "johndoe1234@gmail.com",
   "name": "john doe",
-  "password": "johndoe123"
+  "password": "johndoe1234"
 }
 
 ###
@@ -41,5 +41,10 @@ Content-Type: application/json
 
 ###
 GET http://localhost:8222/users
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/users/me
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}

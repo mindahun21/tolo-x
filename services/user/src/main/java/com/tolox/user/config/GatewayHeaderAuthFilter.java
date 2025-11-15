@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Component
 public class GatewayHeaderAuthFilter extends OncePerRequestFilter {
 
@@ -27,7 +29,7 @@ public class GatewayHeaderAuthFilter extends OncePerRequestFilter {
 //      1) verify the request form gateway (internal token)
         String incomingToken = request.getHeader("X-Internal-Token");
         if(!internalToken.equals(incomingToken)){
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 //      2) extract identity headers
@@ -41,7 +43,7 @@ public class GatewayHeaderAuthFilter extends OncePerRequestFilter {
                 grantedAuthorities = Arrays.stream(rolesHeader.split(","))
                         .map(String::trim)
                         .filter(s -> !s.isEmpty())
-                        .map(SimpleGrantedAuthority::new)
+                        .map(role-> new SimpleGrantedAuthority("ROLE_" + role))
                         .toList();
             }
 //        4) build auth principal

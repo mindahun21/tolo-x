@@ -73,7 +73,7 @@ public class CustomOidcUserService extends OidcUserService {
 
         RoleDto defaultRole;
         try{
-            defaultRole = roleClient.getRoleByName("ROLE_USER");
+            defaultRole = roleClient.getRoleByName("USER");
 
         }catch (FeignException.NotFound ex){
             throw  new RuntimeException("Default role not found");
