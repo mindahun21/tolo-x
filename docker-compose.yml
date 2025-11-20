@@ -1,0 +1,25 @@
+services:
+  postgres:
+    container_name: user_pg_sql
+    image: postgres
+    environment:
+      POSTGRES_USER: tolox
+      POSTGRES_PASSWORD: toloxpass
+      POSTGRES_DB: user_service
+      PGDATA: /var/lib/postgresql/data
+
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      tolo-x-network:
+    restart: unless-stopped
+
+
+
+networks:
+  tolo-x-network:
+
+volumes:
+  postgres:

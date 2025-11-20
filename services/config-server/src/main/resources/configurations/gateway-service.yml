@@ -12,6 +12,12 @@ spring:
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/users/**,/roles/**
+            - id: user-service-openapi
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api-docs/user-service
+              filters:
+                - RewritePath=/api-docs/user-service, /api-docs
 
 server:
   port: 8222

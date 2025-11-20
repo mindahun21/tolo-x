@@ -18,18 +18,6 @@ spring:
             user-info-uri: "https://openidconnect.googleapis.com/v1/userinfo"
             user-name-attribute: sub
 
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/auth_service
-    username: postgres
-    password: root
-  jpa:
-    hibernate:
-      ddl-auto: update
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-
 jwt:
   secret:
     key: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=

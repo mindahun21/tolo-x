@@ -21,3 +21,16 @@ spring:
                   - "PATCH"
                 allowed-headers: "*"
                 allow-credentials: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /api-docs/user-service
+#      - name: auth-service
+#        url: /aggregate/auth-service

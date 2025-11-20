@@ -55,7 +55,6 @@ public class SecurityConfig{
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers(
                                 "auth/**",
-                                "/demo/**",
                                 "/oauth2/**",
                                 "/oauth2/callback/**"
                             ).permitAll()
