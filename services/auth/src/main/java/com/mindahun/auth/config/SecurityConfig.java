@@ -43,8 +43,7 @@ public class SecurityConfig{
             HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler, OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler, RequestResponseLoggingFilter loggingFilter, CustomOidcUserService customOidcUserService) throws Exception {
 
         http.
-                cors(cors->cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -54,10 +53,13 @@ public class SecurityConfig{
                 )
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers(
-                                "auth/**",
-                                "/demo/**",
+                                "/auth/**",
                                 "/oauth2/**",
-                                "/oauth2/callback/**"
+                                "/oauth2/callback/**",
+                                "/api-docs/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**"
                             ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -82,17 +84,17 @@ public class SecurityConfig{
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173/"));
-        corsConfiguration.setAllowedMethods(List.of("DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "PATCH"));
-        corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.addAllowedHeader("*");
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration corsConfiguration = new CorsConfiguration();
+//        corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173/","http://localhost:8222"));
+//        corsConfiguration.setAllowedMethods(List.of("DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "PATCH"));
+//        corsConfiguration.setAllowCredentials(true);
+//        corsConfiguration.addAllowedHeader("*");
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", corsConfiguration);
+//        return source;
+//    }
 
 }

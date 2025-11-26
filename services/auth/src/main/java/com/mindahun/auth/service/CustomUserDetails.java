@@ -1,6 +1,6 @@
 package com.mindahun.auth.service;
 
-import com.mindahun.auth.models.User;
+import com.mindahun.auth.dto.UserDto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,21 +21,21 @@ import java.util.stream.Collectors;
 public class CustomUserDetails implements UserDetails, OAuth2User, OidcUser {
 
     private Map<String, Object> attributes;
-    private final User user;
+    private final UserDto user;
     private OidcIdToken idToken;
     private OidcUserInfo userInfo;
 
-    public CustomUserDetails(User user) {
+    public CustomUserDetails(UserDto user) {
         this.user = user;
     }
 
-    public static CustomUserDetails from(User user, Map<String, Object> attributes) {
+    public static CustomUserDetails from(UserDto user, Map<String, Object> attributes) {
         CustomUserDetails details = new CustomUserDetails(user);
         details.setAttributes(attributes);
         return details;
     }
 
-    public static CustomUserDetails from(User user, Map<String, Object> attributes, OidcIdToken idToken, OidcUserInfo userInfo) {
+    public static CustomUserDetails from(UserDto user, Map<String, Object> attributes, OidcIdToken idToken, OidcUserInfo userInfo) {
         CustomUserDetails details = new CustomUserDetails(user);
         details.setAttributes(attributes);
         details.setIdToken(idToken);
@@ -60,7 +60,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, OidcUser {
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return user.getEnabled();
     }
 
     @Override

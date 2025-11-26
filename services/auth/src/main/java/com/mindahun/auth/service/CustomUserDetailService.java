@@ -1,7 +1,8 @@
 package com.mindahun.auth.service;
 
-import com.mindahun.auth.models.User;
-import com.mindahun.auth.repository.UserRepository;
+import com.mindahun.auth.client.UserClient;
+import com.mindahun.auth.dto.UserDto;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,11 +12,16 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
-    private final UserRepository userRepository;
+    private final UserClient userClient;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return new CustomUserDetails(user);
+        try{
+            UserDto user = userClient.getUserByEmail(email);
+            return new CustomUserDetails(user);
+
+        }catch(FeignException.NotFound e){
+            throw new RuntimeException("User not found");
+        }
     }
 }

@@ -10,7 +10,9 @@ spring:
           globalcors:
             cors-configurations:
               '[/**]':
-                allowed-origins: "http://localhost:5173"
+                allowed-origins:
+                  - "http://localhost:5173"
+                  - "http://localhost:5173"
                 allowed-methods:
                   - "GET"
                   - "POST"
@@ -21,3 +23,23 @@ spring:
                   - "PATCH"
                 allowed-headers: "*"
                 allow-credentials: true
+
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    persist-authorization: true
+    urls:
+      - name: user-service
+        url: /api-docs/user-service
+      - name: auth-service
+        url: /api-docs/auth-service
+    disable-swagger-default-url: true
+    use-root-path: true
+  override-with-generic-response: true
+  

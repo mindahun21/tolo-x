@@ -1,18 +1,16 @@
-package com.mindahun.auth.dto;
+package com.tolox.user.dto;
 
+import com.tolox.user.models.Role;
 import lombok.Data;
 
 import java.util.Set;
 
 @Data
-public class UserDto {
-    private Long id;
+public class UserUpdateDto {
     private String email;
-    private String password;
     private String name;
     private Boolean enabled;
     private String imageUrl;
-    private Set<RoleDto> roles;
-    private AuthProvider provider;
+    private Set<Role> roles;
     private String providerId;
 }

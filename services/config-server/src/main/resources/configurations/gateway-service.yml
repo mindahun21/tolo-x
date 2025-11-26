@@ -12,7 +12,23 @@ spring:
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/users/**,/roles/**
+            - id: user-service-openapi
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api-docs/user-service
+              filters:
+                - RewritePath=/api-docs/user-service, /api-docs
+            - id: auth-service-openapi
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api-docs/auth-service
+              filters:
+                - RewritePath=/api-docs/auth-service, /api-docs
 
 server:
   port: 8222
+
+jwt:
+  secret:
+    key: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
 

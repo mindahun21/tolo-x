@@ -1,0 +1,82 @@
+package com.tolox.gateway;
+
+import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Component
+public class GatewayJwtFilter implements GlobalFilter, Ordered {
+    private final JwtUtil jwtUtil;
+    @Value("${internal.token}")
+    private String internalToken;
+    private final static Logger logger = LoggerFactory.getLogger(GatewayJwtFilter.class);
+
+    public GatewayJwtFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+        if(authHeader == null || !authHeader.startsWith("Bearer ")){
+            ServerHttpRequest mutate = request.mutate().header("X-Internal-Token", internalToken).build();
+            return chain.filter(exchange.mutate().request(mutate).build());
+        }
+
+        String token = authHeader.substring(7);
+        if(!jwtUtil.isTokenValid(token)){
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        Claims claims = jwtUtil.extractAllClaims(token);
+        String email = claims.getSubject();
+        Object rolesObj =  claims.get("roles");
+
+        String rolesHeader;
+        if(rolesObj instanceof Collection){
+            rolesHeader = ((Collection<?>) rolesObj)
+                            .stream().
+                            map(o->{
+                                if(o instanceof Map<?,?> map){
+                                    Object a = map.get("authority");
+                                    return a == null ? "" : a.toString();
+                                }
+                                return o.toString();
+
+                            })
+                    .collect(Collectors.joining(","));
+
+        }else{
+            rolesHeader = rolesObj == null ? "" : rolesObj.toString();
+        }
+        ServerHttpRequest mutate = request.mutate()
+                .header("X-User-Email", email != null? email : "")
+                .header("X-User-Roles", rolesHeader)
+                .header("X-Internal-Token", internalToken)
+                .build();
+
+        return chain.filter(exchange.mutate().request(mutate).build());
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.LOWEST_PRECEDENCE;
+    }
+}

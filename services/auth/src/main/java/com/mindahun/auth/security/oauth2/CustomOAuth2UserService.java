@@ -1,14 +1,15 @@
 package com.mindahun.auth.security.oauth2;
 
+import com.mindahun.auth.client.RoleClient;
+import com.mindahun.auth.client.UserClient;
+import com.mindahun.auth.dto.RoleDto;
+import com.mindahun.auth.dto.UserDto;
 import com.mindahun.auth.exception.OAuth2AuthenticationProcessingException;
-import com.mindahun.auth.models.AuthProvider;
-import com.mindahun.auth.models.Role;
-import com.mindahun.auth.models.User;
-import com.mindahun.auth.repository.RoleRepository;
-import com.mindahun.auth.repository.UserRepository;
+import com.mindahun.auth.dto.AuthProvider;
 import com.mindahun.auth.security.oauth2.user.OAuth2UserInfo;
 import com.mindahun.auth.security.oauth2.user.OAuth2UserInfoFactory;
 import com.mindahun.auth.service.CustomUserDetails;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +22,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,8 +31,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final UserClient userClient;
+    private final RoleClient roleClient;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -57,17 +58,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if(!StringUtils.hasLength(oAuth2UserInfo.getEmail())){
             throw new OAuth2AuthenticationProcessingException("Email not found form Oauth2 Provider");
         }
-        Optional<User> userOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
-        User user;
-        if(userOptional.isPresent()){
-            user = userOptional.get();
+        UserDto user;
+        try{
+            user = userClient.getUserByEmail(oAuth2UserInfo.getEmail());
             if(!user.getProvider().equals(AuthProvider.valueOf(userRequest.getClientRegistration().getRegistrationId().toUpperCase()))){
                 throw new OAuth2AuthenticationProcessingException("Looks like you are signed up with " +user.getProvider() +" account. Please use your "+user.getProvider()+" account to login.");
             }
             user = updateExistingUser(user,oAuth2UserInfo);
-        }else{
+        }catch (FeignException.NotFound ex){
             user= registerNewUser(userRequest,oAuth2UserInfo);
+
         }
+
         if(oAuth2User instanceof OidcUser oidcUser) {
             return CustomUserDetails.from(user, oidcUser.getAttributes(), oidcUser.getIdToken(), oidcUser.getUserInfo());
         }else {
@@ -75,10 +77,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
     }
 
-    private User registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
-        Role defaultRole = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new RuntimeException("Default role not found"));
+    private UserDto registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
+        RoleDto defaultRole;
+        try{
+            defaultRole = roleClient.getRoleByName("USER");
 
-        User user = new User();
+        }catch (FeignException.NotFound ex){
+            throw  new RuntimeException("Default role not found");
+
+        }
+
+        UserDto user = new UserDto();
         user.setEmail(oAuth2UserInfo.getEmail());
         user.setName(oAuth2UserInfo.getName());
         user.setProvider(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId().toUpperCase()));
@@ -87,12 +96,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
         user.setRoles(Set.of(defaultRole));
-        return userRepository.save(user);
+        return userClient.create(user);
     }
 
-    private User updateExistingUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
-        existingUser.setName(oAuth2UserInfo.getName());
-        existingUser.setImageUrl(oAuth2UserInfo.getImageUrl());
-        return userRepository.save(existingUser);
+    private UserDto updateExistingUser(UserDto existingUser, OAuth2UserInfo oAuth2UserInfo) {
+        try {
+            if (!Objects.equals(existingUser.getName(), oAuth2UserInfo.getName()) ||
+                    !Objects.equals(existingUser.getImageUrl(), oAuth2UserInfo.getImageUrl())) {
+
+                existingUser.setName(oAuth2UserInfo.getName());
+                existingUser.setImageUrl(oAuth2UserInfo.getImageUrl());
+                return userClient.update(existingUser);
+            } else {
+                return existingUser;
+            }
+        } catch (FeignException.NotFound e) {
+            log.warn("User not found in USER-SERVICE when updating email={}", existingUser.getEmail());
+            return existingUser;
+        } catch (FeignException e) {
+            log.error("Error communicating with USER-SERVICE: {}", e.getMessage(), e);
+            throw new RuntimeException("USER-SERVICE communication failure: " + e.status());
+        }
     }
 }

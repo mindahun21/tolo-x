@@ -1,28 +1,33 @@
-@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiUk9MRV9VU0VSIn1dLCJzdWIiOiJtaW5kYWh1bjBAZ21haWwuY29tIiwiaWF0IjoxNzYxMTYzOTAxLCJleHAiOjE3NjExNjQ4MDF9.4GSOFjS9ZIJOXIOlS8ZYI_vHPJoyUnBQgjF4RAIbDCo
+@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiVVNFUiJ9XSwic3ViIjoiam9obmRvZTEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzY0MTgzNjM4LCJleHAiOjE3NjQxODQ1Mzh9.LMCOPAq6i_gwTx-2A5C5wRzU231S-macNkyW6PgRino
 
 ###
-POST http://localhost:8080/register
+POST http://localhost:8222/auth/register
 Content-Type: application/json
 
 {
-  "email": "johndoe123@gmail.com",
+  "email": "johndoe1234@gmail.com",
   "name": "john doe",
-  "password": "johndoe123"
+  "password": "johndoe1234"
 }
 
 ###
-POST http://localhost:8080/login
+POST http://localhost:8222/auth/login
 Content-Type: application/json
 
 {
-  "email": "ethiotest10@gmail.com",
-  "password": "mindahun1234"
+  "email": "johndoe1234@gmail.com",
+  "password": "johndoe1234"
 }
 
 ###
-GET http://localhost:8080/check
+GET http://localhost:8222/auth/check
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/auth/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}`
 
 ###
 GET http://localhost:8222/users/email/mindahunxps@gmail.com
@@ -32,3 +37,14 @@ Content-Type: application/json
 ###
 GET http://localhost:8222/demo/user/mindahunxps@gmail.com
 Content-Type: application/json
+
+
+###
+GET http://localhost:8222/users
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/users/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}

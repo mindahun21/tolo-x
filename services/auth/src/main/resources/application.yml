@@ -3,3 +3,8 @@ spring:
     import: optional:configserver:http://localhost:8888
   application:
     name: auth-service
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

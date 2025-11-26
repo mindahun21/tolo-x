@@ -1,6 +1,6 @@
 package com.mindahun.auth.mapper;
 
-import com.mindahun.auth.models.User;
+import com.mindahun.auth.dto.UserDto;
 import com.mindahun.auth.service.CustomUserDetails;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +20,7 @@ public class UserResponseDto {
     private Set<String> roles;
 
     public static UserResponseDto fromCustomUserDetails(CustomUserDetails userDetails) {
-        User user = userDetails.getUser();
+        UserDto user = userDetails.getUser();
         Set<String> roleNames = user.getRoles().stream()
                 .map(role -> role.getName().replace("ROLE_", ""))
                 .collect(Collectors.toSet());
