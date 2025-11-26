@@ -5,6 +5,7 @@ import com.mindahun.auth.client.UserClient;
 import com.mindahun.auth.config.PropertiesConfig;
 import com.mindahun.auth.dto.RoleDto;
 import com.mindahun.auth.dto.UserDto;
+import com.mindahun.auth.exception.custom.UserAlreadyExistsException;
 import com.mindahun.auth.mapper.LoginRequest;
 import com.mindahun.auth.mapper.RegistrationRequest;
 import com.mindahun.auth.mapper.UserResponseDto;
@@ -38,9 +39,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final PropertiesConfig propertiesConfig;
 
-
-
-
     public void saveNewUser(RegistrationRequest registrationRequest) {
         try{
             RoleDto defaultRole = roleClient.getRoleByName("USER");
@@ -58,6 +56,9 @@ public class UserService {
         } catch (FeignException.NotFound e) {
             log.error("Role not found in USER-SERVICE", e);
             throw new RuntimeException("Default role not found in USER-SERVICE");
+        }
+        catch (FeignException.Conflict e) {
+            throw new UserAlreadyExistsException("User already exists");
         } catch (FeignException e) {
             log.error("Error communicating with USER-SERVICE", e);
             throw new RuntimeException("Error calling USER-SERVICE: " + e.status());

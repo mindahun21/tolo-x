@@ -34,13 +34,13 @@ public class GatewayHeaderAuthFilter extends OncePerRequestFilter {
 //      1) verify the request form gateway (internal token)
         String incomingToken = request.getHeader("X-Internal-Token");
         if(!internalToken.equals(incomingToken)){
+            log.error("Invalid internal token=====================================================");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 //      2) extract identity headers
         String rolesHeader = request.getHeader("X-User-Roles");
         String email = request.getHeader("X-User-Email");
-
 //      3) build authorities from roles header
         if(email != null && !email.isEmpty()){
             List<SimpleGrantedAuthority> grantedAuthorities = Collections.emptyList();
@@ -53,6 +53,12 @@ public class GatewayHeaderAuthFilter extends OncePerRequestFilter {
             }
 //        4) build auth principal
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null, grantedAuthorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+        else {
+            // This is for service-to-service communication
+            List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_INTERNAL"));
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("internal-service", null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 //        5)

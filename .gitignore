@@ -6,6 +6,7 @@ target/
 .idea/
 *.iml
 out/
+tasks/
 
 ### Maven ###
 .mvn/timing.properties

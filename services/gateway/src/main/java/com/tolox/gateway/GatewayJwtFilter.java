@@ -1,6 +1,8 @@
 package com.tolox.gateway;
 
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -21,6 +23,7 @@ public class GatewayJwtFilter implements GlobalFilter, Ordered {
     private final JwtUtil jwtUtil;
     @Value("${internal.token}")
     private String internalToken;
+    private final static Logger logger = LoggerFactory.getLogger(GatewayJwtFilter.class);
 
     public GatewayJwtFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -32,7 +35,8 @@ public class GatewayJwtFilter implements GlobalFilter, Ordered {
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
-            return chain.filter(exchange);
+            ServerHttpRequest mutate = request.mutate().header("X-Internal-Token", internalToken).build();
+            return chain.filter(exchange.mutate().request(mutate).build());
         }
 
         String token = authHeader.substring(7);

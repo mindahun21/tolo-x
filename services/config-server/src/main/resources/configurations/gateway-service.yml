@@ -18,6 +18,12 @@ spring:
                 - Path=/api-docs/user-service
               filters:
                 - RewritePath=/api-docs/user-service, /api-docs
+            - id: auth-service-openapi
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api-docs/auth-service
+              filters:
+                - RewritePath=/api-docs/auth-service, /api-docs
 
 server:
   port: 8222

@@ -1,5 +1,6 @@
 package com.mindahun.auth.exception;
 
+import com.mindahun.auth.exception.custom.UserAlreadyExistsException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,15 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "error", e.getMessage(),
+                "timestamp",LocalDateTime.now()
+        ));
+    }
+
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<Map<String, Object>> handleFeignException(FeignException ex) {
         log.info("FeignException HAPPENING: {}", ex.getMessage());
