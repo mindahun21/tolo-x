@@ -1,3 +1,5 @@
+#build dokcer images and push them to docker
+
 name: build and push docker images
 on:
   push:
