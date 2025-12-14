@@ -1,6 +1,16 @@
 spring:
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   application:
     name: discovery-service
 
+  cloud:
+    config:
+      retry:
+        initial-interval: 2000
+        max-attempts: 6
+        max-interval: 10000
+        multiplier: 1.5
+
+server:
+  port: 8761

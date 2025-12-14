@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db-postgres:5432/user_service
+    username: tolox
+    password: toloxpass
+#eureka:
+#  instance:
+#    prefer-ip-address: false
+#  client:
+#    serviceUrl:
+#      defaultZone: http://discovery-service:8761/eureka

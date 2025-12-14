@@ -1,0 +1,6 @@
+#eureka:
+#  instance:
+#    prefer-ip-address: false
+#  client:
+#    serviceUrl:
+#      defaultZone: http://discovery-service:8761/eureka

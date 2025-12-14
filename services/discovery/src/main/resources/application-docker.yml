@@ -1,0 +1,6 @@
+#eureka:
+#  instance:
+#    hostname: discovery-service
+#  client:
+#    service-url:
+#      default-zone: http://discovery-service:8761/eureka
