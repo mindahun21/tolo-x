@@ -1,5 +1,6 @@
 package com.tolox.user.services;
 
+import com.tolox.user.dto.UserResponseDto;
 import com.tolox.user.dto.UserUpdateDto;
 import com.tolox.user.models.User;
 import com.tolox.user.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +44,17 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<User> findAll(){
-        return userRepository.findAll();
+    public List<UserResponseDto> findAll(){
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> UserResponseDto.builder()
+                .name(user.getName())
+                .roles(user.getRoles())
+                .enabled(user.isEnabled())
+                .email(user.getEmail())
+                .id(user.getId())
+                .build())
+                .collect(Collectors.toList());
     }
 
 }

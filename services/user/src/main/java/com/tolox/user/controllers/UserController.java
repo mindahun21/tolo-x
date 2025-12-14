@@ -1,6 +1,7 @@
 package com.tolox.user.controllers;
 
 
+import com.tolox.user.dto.UserResponseDto;
 import com.tolox.user.dto.UserUpdateDto;
 import com.tolox.user.repository.UserRepository;
 import com.tolox.user.services.UserService;
@@ -46,7 +47,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
-    public ResponseEntity<List<User>> findAll(){
+    public ResponseEntity<List<UserResponseDto>> findAll(){
         return ResponseEntity.ok(userService.findAll());
     }
 

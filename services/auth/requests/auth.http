@@ -1,11 +1,11 @@
-@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiVVNFUiJ9XSwic3ViIjoiam9obmRvZTEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzY0MTgzNjM4LCJleHAiOjE3NjQxODQ1Mzh9.LMCOPAq6i_gwTx-2A5C5wRzU231S-macNkyW6PgRino
+@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiQURNSU4ifV0sInN1YiI6ImpvaG5kb2UxMjM0QGdtYWlsLmNvbSIsImlhdCI6MTc2NTcyMzI0MCwiZXhwIjoxNzY1NzI0MTQwfQ.QalLBEV_rRmDkKykXe4y46iqZgnHQbiaYErkCpvAsQA
 
 ###
 POST http://localhost:8222/auth/register
 Content-Type: application/json
 
 {
-  "email": "johndoe1234@gmail.com",
+  "email": "johndoe1@gmail.com",
   "name": "john doe",
   "password": "johndoe1234"
 }
@@ -30,9 +30,13 @@ Content-Type: application/json
 Authorization: Bearer {{auth_token}}`
 
 ###
-GET http://localhost:8222/users/email/mindahunxps@gmail.com
+GET http://localhost:8222/users/email/johndoe1234@gmail.com
 Content-Type: application/json
 
+
+###
+GET http://localhost:8222/demo/user/mindahunxps@gmail.com
+Content-Type: application/json
 
 ###
 GET http://localhost:8222/demo/user/mindahunxps@gmail.com

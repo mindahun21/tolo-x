@@ -1,25 +1,127 @@
 services:
-  postgres:
-    container_name: user_pg_sql
+  db-postgres:
+    container_name: db-postgres
     image: postgres
     environment:
       POSTGRES_USER: tolox
       POSTGRES_PASSWORD: toloxpass
       POSTGRES_DB: user_service
       PGDATA: /var/lib/postgresql/data
-
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - db-postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - 12345:5432
     networks:
-      tolo-x-network:
+      - tolo-x-db-postgres
     restart: unless-stopped
 
+  config-server:
+    build:
+      context: ./services/config-server
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-server:8888/actuator/health"]
+      interval: 5s
+      retries: 5
+    networks:
+      - tolo-x-internal
 
+  discovery-service:
+    build:
+      context: ./services/discovery
+      dockerfile: Dockerfile
+    ports:
+      - 8761:8761
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://discovery-service:8761/actuator/health" ]
+      interval: 5s
+      retries: 5
+    depends_on:
+      config-server:
+        condition: service_healthy
+    networks:
+      - tolo-x-internal
+
+  user-service:
+    build:
+      context: ./services/user
+      dockerfile: Dockerfile
+    ports:
+      - 8092:8092
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATABASE_URL: jdbc:postgresql://db-postgres:5432/user_service
+      SPRING_DATABASE_USERNAME: tolox
+      SPRING_DATABASE_PASSWORD: toloxpass
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    depends_on:
+      db-postgres:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://user-service:8092/actuator/health" ]
+      interval: 5s
+      retries: 5
+    networks:
+      - tolo-x-db-postgres
+      - tolo-x-internal
+
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    ports:
+      - 8091:8091
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://auth-service:8091/actuator/health" ]
+      interval: 5s
+      retries: 5
+    networks:
+      - tolo-x-internal
+
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    ports:
+      - 1222:8222
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://gateway:8222/actuator/health" ]
+      interval: 5s
+      retries: 5
+    networks:
+      - tolo-x-internal
 
 networks:
-  tolo-x-network:
+  tolo-x-internal:
+  tolo-x-public:
+  tolo-x-db-postgres:
 
 volumes:
-  postgres:
+  db-postgres:

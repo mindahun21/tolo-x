@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:12345/user_service
+    username: tolox
+    password: toloxpass
