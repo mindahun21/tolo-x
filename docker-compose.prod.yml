@@ -1,0 +1,90 @@
+services:
+  db-postgres:
+    image: postgres:16
+    container_name: db-postgres
+    environment:
+      POSTGRES_USER: tolox
+      POSTGRES_PASSWORD: toloxpass
+      POSTGRES_DB: user_service
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - db-postgres:/var/lib/postgresql/data
+    networks:
+      - tolo-x-db-postgres
+    restart: unless-stopped
+
+  config-server:
+    image: mindaxps/config-server:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    networks:
+      - tolo-x-internal
+    restart: unless-stopped
+
+  discovery-service:
+    image: mindaxps/discovery-service:latest
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      - config-server
+    networks:
+      - tolo-x-internal
+    restart: unless-stopped
+
+  user-service:
+    image: mindaxps/user-service:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATABASE_URL: jdbc:postgresql://db-postgres:5432/user_service
+      SPRING_DATABASE_USERNAME: tolox
+      SPRING_DATABASE_PASSWORD: toloxpass
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    depends_on:
+      - db-postgres
+      - discovery-service
+    networks:
+      - tolo-x-db-postgres
+      - tolo-x-internal
+    restart: unless-stopped
+
+  auth-service:
+    image: mindaxps/auth-service:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    depends_on:
+      - discovery-service
+    networks:
+      - tolo-x-internal
+    restart: unless-stopped
+
+  gateway:
+    image: mindaxps/gateway:latest
+    ports:
+      - "1222:8222"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_HOSTNAME: discovery-service
+      EUREKA_URL: http://discovery-service:8761
+    depends_on:
+      - discovery-service
+    networks:
+      - tolo-x-internal
+    restart: unless-stopped
+
+networks:
+  tolo-x-internal:
+  tolo-x-db-postgres:
+
+volumes:
+  db-postgres:
