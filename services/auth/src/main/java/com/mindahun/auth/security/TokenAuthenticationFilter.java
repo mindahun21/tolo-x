@@ -59,13 +59,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             }catch(ExpiredJwtException ex){
-                log.info("================== hear in TokenAuthenticationFilter ===============");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"error\":\"Token expired\"}");
                 return;
             }catch(Exception ex){
-                log.info("================== hear in TokenAuthenticationFilter2 ===============");
 
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");

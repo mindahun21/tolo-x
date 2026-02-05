@@ -66,6 +66,7 @@ public class GatewayJwtFilter implements GlobalFilter, Ordered {
         }else{
             rolesHeader = rolesObj == null ? "" : rolesObj.toString();
         }
+        logger.info("yes Internal token sended ", internalToken);
         ServerHttpRequest mutate = request.mutate()
                 .header("X-User-Email", email != null? email : "")
                 .header("X-User-Roles", rolesHeader)
