@@ -13,6 +13,6 @@ public class FeignInternalAuthConfig {
     @Bean
     public RequestInterceptor internalAuthInterceptor() {
         return requestTemplate ->
-                requestTemplate.header("X-Internal-Token", internalToken);
+                requestTemplate.header("X-Service-Token", internalToken);
     }
 }

@@ -4,5 +4,5 @@ CREATE TABLE role (
 );
 
 INSERT INTO role (name) VALUES
-                            ('ADMIN'),
+                            ('SUPER_ADMIN'),
                             ('USER');

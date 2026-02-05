@@ -1,6 +1,6 @@
 package com.tolox.user.models;
 
 public enum ERole {
-    ADMIN,
+    SUPER_ADMIN,
     USER,
 }
