@@ -13,7 +13,7 @@ COPY src src
 RUN ./mvnw -DskipTests package
 
 # run stage
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
 ENTRYPOINT ["java","-jar","app.jar"]
