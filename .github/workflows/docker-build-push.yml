@@ -50,7 +50,7 @@ jobs:
           context: ./services/gateway
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/gateqway-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/gateway-service:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/gateway-service:${{ github.sha }}
 
       - name: build and push user service
