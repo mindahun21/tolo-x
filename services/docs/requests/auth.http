@@ -1,7 +1,7 @@
 @auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiU1VQRVJfQURNSU4ifV0sInN1YiI6ImpvaG5kb2UxMjM0QGdtYWlsLmNvbSIsImlhdCI6MTc3MDMwMzExNSwiZXhwIjoxNzcwMzA0MDE1fQ.q7mRLHnlqiSyD2BfJWaiwPLak2Vhh4r8VgABeNYi2v0
 
 ###
-POST http://localhost:8222/auth/register
+POST http://192.168.49.2:31222/auth/register
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8222/auth/login
+POST http://192.168.49.2:31222/auth/login
 Content-Type: application/json
 
 {
@@ -20,42 +20,42 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:8222/auth/check
+GET http://192.168.49.2:31222/auth/check
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 ###
-GET http://localhost:8222/auth/me
+GET http://192.168.49.2:31222/auth/me
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 ###
-GET http://localhost:8222/users/email/johndoe1234@gmail.com
+GET http://192.168.49.2:31222/users/email/johndoe1234@gmail.com
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 
 ###
-GET http://localhost:8222/demo/user/mindahunxps@gmail.com
+GET http://192.168.49.2:31222/demo/user/mindahunxps@gmail.com
 Content-Type: application/json
 
 ###
-GET http://localhost:8222/demo/user/mindahunxps@gmail.com
+GET http://192.168.49.2:31222/demo/user/mindahunxps@gmail.com
 Content-Type: application/json
 
 
 ###
-GET http://localhost:8222/users
-Content-Type: application/json
-Authorization: Bearer {{auth_token}}
-
-###
-GET http://localhost:8222/users/me
+GET http://192.168.49.2:31222/users
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 ###
-PATCH http://localhost:8222/users
+GET http://192.168.49.2:31222/users/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+PATCH http://192.168.49.2:31222/users
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
