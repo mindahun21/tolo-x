@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: mindaxps/user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8092
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+            - name: SPRING_DATABASE_URL
+              value: jdbc:postgresql://db-postgres:5432/user_service
+            - name: SPRING_DATABASE_USERNAME
+              value: "tolox"
+            - name: SPRING_DATABASE_PASSWORD
+              value: "toloxpass"
+            - name: CONFIG_SERVER_URL
+              value: http://config-server:8888
+            - name: EUREKA_HOSTNAME
+              value: discovery-service
+            - name: EUREKA_URL
+              value: http://discovery-service:8761
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8092
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8092
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: default
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 8092
+      targetPort: 8092

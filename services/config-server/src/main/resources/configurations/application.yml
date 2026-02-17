@@ -14,11 +14,13 @@ management:
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
 
 eureka:
   client:
     healthcheck:
-      enabled: true
+      enabled: false
 
 internal:
   token: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
