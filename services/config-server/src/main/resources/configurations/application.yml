@@ -21,6 +21,8 @@ eureka:
   client:
     healthcheck:
       enabled: false
+  instance:
+    prefer-ip-address: true
 
 internal:
   token: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
