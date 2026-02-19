@@ -43,6 +43,7 @@ metadata:
   name: discovery-service
   namespace: default
 spec:
+  type: NodePort
   selector:
     app: discovery-service
   ports:
