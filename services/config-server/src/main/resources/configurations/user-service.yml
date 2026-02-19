@@ -1,13 +1,13 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://localhost:5432/user_service
-#    username: tolox
-#    password: toloxpass
+    url: ${USER_SERVICE_DATASOURCE_URL:jdbc:postgresql://localhost:12345/user_service}
+    username: ${USER_SERVICE_DATASOURCE_USERNAME:tolox}
+    password: ${USER_SERVICE_DATASOURCE_PASSWORD:toloxpass}
     jpa:
       hibernate:
         ddl-auto: none
-      database: user_service
+      database: ${USER_SERVICE_DATASOURCE_JPA_DATABASE:user_service}
       database-platform: org.hibernate.dialect.PostgreSQLDialect
     flyway:
       baseline-on-migrate: true

@@ -1,0 +1,69 @@
+@auth_token=eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiU1VQRVJfQURNSU4ifV0sInN1YiI6ImpvaG5kb2UxMjM0QGdtYWlsLmNvbSIsImlhdCI6MTc3MDMwMzExNSwiZXhwIjoxNzcwMzA0MDE1fQ.q7mRLHnlqiSyD2BfJWaiwPLak2Vhh4r8VgABeNYi2v0
+
+###
+POST http://localhost:8222/auth/register
+Content-Type: application/json
+
+{
+  "email": "johndoe1234@gmail.com",
+  "name": "john doe",
+  "password": "johndoe1234"
+}
+
+###
+POST http://localhost:8222/auth/login
+Content-Type: application/json
+
+{
+  "email": "johndoe1234@gmail.com",
+  "password": "johndoe1234"
+}
+
+###
+GET http://localhost:8222/auth/check
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/auth/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/users/email/johndoe1234@gmail.com
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+
+###
+GET http://localhost:8222/demo/user/mindahunxps@gmail.com
+Content-Type: application/json
+
+###
+GET http://localhost:8222/demo/user/mindahunxps@gmail.com
+Content-Type: application/json
+
+
+###
+GET http://localhost:8222/users
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+GET http://localhost:8222/users/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###
+PATCH http://localhost:8222/users
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "email": "johndoe1234@gmail.com",
+  "name": "john doe",
+  "enabled": false,
+  "imageUrl": "askdjad",
+  "roles": [{"id": 2}],
+  "providerId": "ssdwersffwww4"
+}
