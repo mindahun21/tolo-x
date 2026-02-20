@@ -30,8 +30,7 @@ jwt:
 app:
   tokenSecret: ${TOKEN_SECRET:1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=}
   tokenExpirationMsec: ${TOKEN_EXPIRATION_MSEC:900000}
-  authorizedRedirectUris:
-    ${AUTHORIZED_OAUTH2_REDIRECT_URIS:http://localhost:5173/oauth2/redirect}
+  authorizedRedirectUris: ${AUTHORIZED_OAUTH2_REDIRECT_URIS:http://localhost:5173/oauth2/redirect}
 
 server:
   port: 8091
