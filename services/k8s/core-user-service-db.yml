@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: db-postgres
+  name: core-user-service-db
   labels:
-    app: db-postgres
+    app: core-user-service-db
 spec:
-  serviceName: db-postgres
+  serviceName: core-user-service-db
   replicas: 1
   selector:
     matchLabels:
-      app: db-postgres
+      app: core-user-service-db
   template:
     metadata:
       labels:
-        app: db-postgres
+        app: core-user-service-db
     spec:
       containers:
         - name: postgres
@@ -45,15 +45,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: db-postgres
+  name: core-user-service-db
   labels:
-    app: db-postgres
+    app: core-user-service-db
 spec:
   ports:
     - port: 5432
       targetPort: 5432
   clusterIP: None
   selector:
-    app: db-postgres
+    app: core-user-service-db
 
 

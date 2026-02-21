@@ -7,6 +7,7 @@ target/
 *.iml
 out/
 tasks/
+.env
 
 ### Maven ###
 .mvn/timing.properties

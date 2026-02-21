@@ -21,11 +21,12 @@ services:
       dockerfile: Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: native
+      INTERNAL_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+      SERVICE_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
       EUREKA_HOSTNAME: discovery-service
       EUREKA_URL: http://discovery-service:8761/eureka/
-
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://config-server:8888/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://config-server:8888/actuator/health"]
       interval: 5s
       retries: 5
     networks:
@@ -42,8 +43,10 @@ services:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_HOSTNAME: discovery-service
       EUREKA_URL: http://discovery-service:8761/eureka/
+      INTERNAL_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+      SERVICE_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://discovery-service:8761/actuator/health" ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://discovery-service:8761/actuator/health"]
       interval: 5s
       retries: 5
     depends_on:
@@ -61,12 +64,12 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: native
       CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_HOSTNAME: discovery-service
+      EUREKA_HOSTNAME: user-service
       EUREKA_URL: http://discovery-service:8761/eureka/
       USER_SERVICE_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/user_service
       USER_SERVICE_DATASOURCE_USERNAME: tolox
       USER_SERVICE_DATASOURCE_PASSWORD: toloxpass
-      USER_SERVICE_DATASOURCE_JPA_DATABASE: user_service
+      USER_SERVICE_DATASOURCE_JPA_DATABASE: POSTGRESQL
       INTERNAL_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
       SERVICE_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
     depends_on:
@@ -75,7 +78,7 @@ services:
       discovery-service:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://user-service:8092/actuator/health" ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://user-service:8092/actuator/health"]
       interval: 5s
       retries: 5
     networks:
@@ -89,10 +92,10 @@ services:
     ports:
       - 8091:8091
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_HOSTNAME: discovery-service
-      EUREKA_URL: http://discovery-service:8761/eureka/
       SPRING_PROFILES_ACTIVE: native
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_HOSTNAME: auth-service
+      EUREKA_URL: http://discovery-service:8761/eureka/
       INTERNAL_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
       SERVICE_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
       GOOGLE_OAUTH2_CLIENT_ID: 494094989721-c40huttg8kd92b7gaov7o1pcerhqagfq.apps.googleusercontent.com
@@ -108,7 +111,7 @@ services:
       discovery-service:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://auth-service:8091/actuator/health" ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://auth-service:8091/actuator/health"]
       interval: 5s
       retries: 5
     networks:
@@ -121,18 +124,19 @@ services:
     ports:
       - 1222:8222
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_HOSTNAME: discovery-service
-      EUREKA_URL: http://discovery-service:8761/eureka/
       SPRING_PROFILES_ACTIVE: native
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_HOSTNAME: gateway
+      EUREKA_URL: http://discovery-service:8761/eureka/
       INTERNAL_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
       SERVICE_TOKEN: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
       JWT_SECRET_KEY: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
     depends_on:
       discovery-service:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://gateway:8222/actuator/health" ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://gateway:8222/actuator/health"]
       interval: 5s
       retries: 5
     networks:

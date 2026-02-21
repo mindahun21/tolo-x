@@ -25,7 +25,11 @@ spec:
             - name: EUREKA_HOSTNAME
               value: discovery-service
             - name: EUREKA_URL
-              value: http://discovery-service:8761
+              value: http://discovery-service:8761/eureka/
+            - name: INTERNAL_TOKEN
+              value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+            - name: SERVICE_TOKEN
+              value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness

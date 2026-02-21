@@ -23,13 +23,35 @@ spec:
             - containerPort: 8091
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: docker
+              value: native
             - name: CONFIG_SERVER_URL
               value: http://config-server:8888
             - name: EUREKA_HOSTNAME
-              value: discovery-service
+              value: auth-service
             - name: EUREKA_URL
-              value: http://discovery-service:8761
+              value: http://discovery-service:8761/eureka/
+            - name: INTERNAL_TOKEN
+              value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+            - name: SERVICE_TOKEN
+              value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+            - name: GOOGLE_OAUTH2_CLIENT_ID
+              value: 494094989721-c40huttg8kd92b7gaov7o1pcerhqagfq.apps.googleusercontent.com
+            - name: GOOGLE_OAUTH2_CLIENT_SECRET
+              value: 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
+            - name: OAUTH2_CALLBACK_REDIRECT_URL
+              value: "http://localhost:8222/oauth2/callback/{registrationId}"
+            - name: JWT_SECRET_KEY
+              value: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+            - name: JWT_ACCESS_EXPIRATION
+              value: "900000"
+            - name: JWT_REFRESH_EXPIRATION
+              value: "604800000"
+            - name: TOKEN_SECRET
+              value: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+            - name: TOKEN_EXPIRATION_MSEC
+              value: "900000"
+            - name: AUTHORIZED_OAUTH2_REDIRECT_URIS
+              value: http://localhost:5173/oauth2/redirect
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
