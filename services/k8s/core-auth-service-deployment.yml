@@ -30,6 +30,8 @@ spec:
               value: auth-service
             - name: EUREKA_URL
               value: http://discovery-service:8761/eureka/
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://discovery-service:8761/eureka/
             - name: INTERNAL_TOKEN
               value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
             - name: SERVICE_TOKEN
