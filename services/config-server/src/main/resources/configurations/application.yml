@@ -1,7 +1,8 @@
 spring:
   cloud:
     config:
-      override-system-properties: false
+      allow-override: true
+      override-none: true
 
 management:
   tracing:
@@ -20,14 +21,14 @@ management:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+      defaultZone: ${EUREKA_URL}
     healthcheck:
       enabled: false
   instance:
-    hostname: ${EUREKA_HOSTNAME:localhost}
+    hostname: ${EUREKA_HOSTNAME}
     prefer-ip-address: true
 
 internal:
-  token: ${INTERNAL_TOKEN:dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==}
+  token: ${INTERNAL_TOKEN}
   service:
-    token: ${SERVICE_TOKEN:dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==}
+    token: ${SERVICE_TOKEN}

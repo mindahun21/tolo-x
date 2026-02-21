@@ -20,13 +20,21 @@ spec:
             - containerPort: 8222
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: docker
+              value: native
             - name: CONFIG_SERVER_URL
               value: http://config-server:8888
             - name: EUREKA_HOSTNAME
-              value: discovery-service
+              value: gateway
             - name: EUREKA_URL
-              value: http://discovery-service:8761
+              value: http://discovery-service:8761/eureka/
+            - name: INTERNAL_TOKEN
+              value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+            - name: SERVICE_TOKEN
+              value: dG9sb3hpbnRlcm5hbHNlY3JldHRva2VuZm9ybWljcm9zZXJ2aWNlcw==
+            - name: JWT_SECRET_KEY
+              value: 1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=
+            - name: CORS_ALLOWED_ORIGINS
+              value: http://localhost:5173
           readinessProbe:
             httpGet:
               path: /actuator/health

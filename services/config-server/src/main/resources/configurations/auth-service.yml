@@ -4,13 +4,13 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_OAUTH2_CLIENT_ID:494094989721-c40huttg8kd92b7gaov7o1pcerhqagfq.apps.googleusercontent.com}
-            client-secret: ${GOOGLE_OAUTH2_CLIENT_SECRET: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}
+            client-id: ${GOOGLE_OAUTH2_CLIENT_ID}
+            client-secret: ${GOOGLE_OAUTH2_CLIENT_SECRET}
             scope:
               - openid
               - profile
               - email
-            redirect-uri: ${OAUTH2_CALLBACK_REDIRECT_URL:"http://localhost:8222/oauth2/callback/{registrationId}"}
+            redirect-uri: ${OAUTH2_CALLBACK_REDIRECT_URL}
         provider:
           google:
             authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth"
@@ -20,18 +20,17 @@ spring:
 
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY:1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=}
+    key: ${JWT_SECRET_KEY}
   expiration:
     access:
-      ms: ${JWT_ACCESS_EXPIRATION:900000}
+      ms: ${JWT_ACCESS_EXPIRATION}
     refresh:
-      ms: ${JWT_REFRESH_EXPIRATION:604800000}
+      ms: ${JWT_REFRESH_EXPIRATION}
 
 app:
-  tokenSecret: ${TOKEN_SECRET:1x8NbZAgBr91EIKrWcnvLVyTSEOnV6g4efmMp+dIS2k=}
-  tokenExpirationMsec: ${TOKEN_EXPIRATION_MSEC:900000}
-  authorizedRedirectUris:
-    ${AUTHORIZED_OAUTH2_REDIRECT_URIS:http://localhost:5173/oauth2/redirect}
+  tokenSecret: ${TOKEN_SECRET}
+  tokenExpirationMsec: ${TOKEN_EXPIRATION_MSEC}
+  authorizedRedirectUris: ${AUTHORIZED_OAUTH2_REDIRECT_URIS}
 
 server:
   port: 8091
