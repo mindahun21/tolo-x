@@ -1,0 +1,15 @@
+spring:
+  r2dbc:
+    username: ${PREFERENCE_SERVICE_DATASOURCE_USERNAME}
+    password: ${PREFERENCE_SERVICE_DATASOURCE_PASSWORD}
+    url: ${PREFERENCE_SERVICE_DATASOURCE_URL}
+  flyway:
+    url: ${PREFERENCE_SERVICE_FLYWAY_DATASOURCE_URL}
+    user: ${PREFERENCE_SERVICE_DATASOURCE_USERNAME}
+    password: ${PREFERENCE_SERVICE_DATASOURCE_PASSWORD}
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+
+server:
+  port: 8093

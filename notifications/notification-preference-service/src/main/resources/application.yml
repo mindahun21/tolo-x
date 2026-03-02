@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: notification-preference-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL}
+  cloud:
+    config:
+      retry:
+        initial-interval: 2000
+        max-attempts: 6
+        max-interval: 10000
+        multiplier: 1.5
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER_URL}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}

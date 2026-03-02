@@ -1,0 +1,376 @@
+### Notification Preference Service - Detailed API Contract & Logic Test Suite
+# This file provides a full suite of tests covering all endpoints and logical scenarios
+# for the Rule-Based Notification Preference Service.
+# Applications: Tolo Auth, Tolo Park, Tolo Queue, Tolo Promo
+
+@baseUrl = http://localhost:8093
+@u1 = 1001
+@u2 = 1002
+@u3 = 1003
+@u4 = 1004
+@u5 = 1005
+
+### ==========================================
+### 1. ADMIN CATALOG SETUP (Apps & Rules)
+### ==========================================
+
+### 1.1 Tolo Auth (Mandatory Services)
+# Expected: These ignore user blocks and quiet hours.
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "LOGIN_OTP",
+  "appId": "tolo-auth",
+  "channel": "SMS",
+  "category": "SECURITY",
+  "defaultEnabled": true,
+  "mandatory": true,
+  "status": "ACTIVE"
+}
+
+###
+
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "FORGOT_PW",
+  "appId": "tolo-auth",
+  "channel": "EMAIL",
+  "category": "SECURITY",
+  "defaultEnabled": true,
+  "mandatory": true,
+  "status": "ACTIVE"
+}
+
+### 1.2 Tolo Park (High Priority & Marketing)
+# Reminders are Transactional (Default ON), near-by deals are Marketing (Default ON).
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "PARKING_EXPIRED_ALERT",
+  "appId": "tolo-park",
+  "channel": "PUSH",
+  "category": "TRANSACTIONAL",
+  "defaultEnabled": true,
+  "mandatory": false,
+  "status": "ACTIVE"
+}
+
+###
+
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "PARKING_DEAL_NEARBY",
+  "appId": "tolo-park",
+  "channel": "PUSH",
+  "category": "MARKETING",
+  "defaultEnabled": true,
+  "mandatory": false,
+  "status": "ACTIVE"
+}
+
+### 1.3 Tolo Queue (Transactional)
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "QUEUE_READY",
+  "appId": "tolo-queue",
+  "channel": "PUSH",
+  "category": "TRANSACTIONAL",
+  "defaultEnabled": true,
+  "mandatory": false,
+  "status": "ACTIVE"
+}
+
+### 1.4 Social Notifications (Default OFF)
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "SOCIAL_NEW_LIKE",
+  "appId": "tolo-social",
+  "channel": "PUSH",
+  "category": "SOCIAL",
+  "defaultEnabled": false,
+  "mandatory": false,
+  "status": "ACTIVE"
+}
+
+### 1.5 List and Verify Types
+GET {{baseUrl}}/admin/notification-types
+
+
+### ==========================================
+### 2. USER PROFILE CONFIGURATION
+### ==========================================
+
+### 2.1 User 1001 (Standard Active User)
+# Set all channels as ACTIVE (Standard settings)
+PUT {{baseUrl}}/users/{{u1}}/channels/PUSH
+Content-Type: application/json
+
+{
+  "blocked": false,
+  "quietHoursStart": "22:00:00",
+  "quietHoursEnd": "08:00:00",
+  "timezone": "UTC"
+}
+
+### 2.2 User 1002 (Global Block Logic)
+# User 1002 BLOCKS all SMA and EMAIL messages.
+PUT {{baseUrl}}/users/{{u2}}/channels/SMS
+Content-Type: application/json
+
+{
+  "blocked": true,
+  "quietHoursStart": "00:00:00",
+  "quietHoursEnd": "00:00:00",
+  "timezone": "UTC"
+}
+
+###
+
+PUT {{baseUrl}}/users/{{u2}}/channels/EMAIL
+Content-Type: application/json
+
+{
+  "blocked": true,
+  "quietHoursStart": "00:00:00",
+  "quietHoursEnd": "00:00:00",
+  "timezone": "UTC"
+}
+
+### 2.3 User 1003 (Quiet Hours Priority)
+# Only PUSH is enabled, but with strict nightly quiet hours.
+PUT {{baseUrl}}/users/{{u3}}/channels/PUSH
+Content-Type: application/json
+
+{
+  "blocked": false,
+  "quietHoursStart": "21:00:00",
+  "quietHoursEnd": "09:00:00",
+  "timezone": "Africa/Nairobi"
+}
+
+### 2.4 User 1004 (Legal Opt-Out - Hard Block)
+# This user have legally opted out from certain data processing/contact.
+# First initialize the channel
+PUT {{baseUrl}}/users/{{u4}}/channels/PUSH
+Content-Type: application/json
+
+{
+  "blocked": false,
+  "quietHoursStart": "00:00:00",
+  "quietHoursEnd": "00:00:00",
+  "timezone": "UTC"
+}
+### Set Legal Opt-Out
+PATCH {{baseUrl}}/users/{{u4}}/channels/PUSH/legal-opt-out
+Content-Type: application/json
+
+{
+  "value": true
+}
+
+### 2.5 User 1005 (Specific Notification Overrides)
+# User 1005 explicitly DISBLES Parking Deals but ENABLES Social Likes.
+PUT {{baseUrl}}/users/{{u5}}/notifications/PARKING_DEAL_NEARBY
+Content-Type: application/json
+
+{
+  "enabled": false
+}
+
+### Social Likes (which is default OFF in catalog)
+PUT {{baseUrl}}/users/{{u5}}/notifications/SOCIAL_NEW_LIKE
+Content-Type: application/json
+
+{
+  "enabled": true
+}
+
+
+### ==========================================
+### 3. RULE ENGINE SCENARIO TESTING (Edge Cases)
+### ==========================================
+
+### 3.1 RULE: Mandatory Rule overrides everything (Global Block)
+# User 1002 has blocked SMS, but LOGIN_OTP is Mandatory.
+# Expected result: ALLOWED (Reason: MANDATORY)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u2}}",
+  "notificationTypeCode": "LOGIN_OTP",
+  "channel": "SMS",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+### 3.2 RULE: Mandatory Rule overrides Quiet Hours
+# User 1003 is in quiet hours (01:00 AM Nairobi time), but an AUTH message must pass.
+# Expected result: ALLOWED (Reason: MANDATORY)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u3}}",
+  "notificationTypeCode": "LOGIN_OTP",
+  "channel": "PUSH",
+  "currentTime": "2024-05-20T22:00:00Z"
+}
+
+### 3.3 RULE: Global Block stops regular Transactional/Marketing
+# User 1002 blocked Email. Try sending Parking Expired Alert (Email is default for this type? No PUSH).
+# Expected result: BLOCKED (Reason: CHANNEL_BLOCKED)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u2}}",
+  "notificationTypeCode": "FORGOT_PW",
+  "channel": "EMAIL",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+### Wait, FORGOT_PW is Mandatory! Let's try non-mandatory on User 1002 email.
+# Need to create a non-mandatory Email alert first.
+
+### 3.4 Create non-mandatory Email for testing
+POST {{baseUrl}}/admin/notification-types
+Content-Type: application/json
+
+{
+  "code": "PARK_RECEIPT_EMAIL",
+  "appId": "tolo-park",
+  "channel": "EMAIL",
+  "category": "TRANSACTIONAL",
+  "defaultEnabled": true,
+  "mandatory": false,
+  "status": "ACTIVE"
+}
+
+### Test Global Block for non-mandatory
+# Expected: BLOCKED (CHANNEL_BLOCKED)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u2}}",
+  "notificationTypeCode": "PARK_RECEIPT_EMAIL",
+  "channel": "EMAIL",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+### 3.5 RULE: Quiet Hours restriction
+# User 1003 is in quiet hours at 23:00 UTC (02:00 AM Nairobi).
+# Expected result: BLOCKED (Reason: QUIET_HOURS)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u3}}",
+  "notificationTypeCode": "QUEUE_READY",
+  "channel": "PUSH",
+  "currentTime": "2024-05-20T23:00:00Z"
+}
+
+### 3.6 RULE: Legal Opt-Out
+# User 1004 has Legal Opt-Out on PUSH.
+# Should block even non-mandatory transactional messages.
+# Expected result: BLOCKED (Reason: LEGAL_OPT_OUT)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u4}}",
+  "notificationTypeCode": "QUEUE_READY",
+  "channel": "PUSH",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+### 3.7 RULE: User Override (Explicit Opt-Out)
+# User 1005 disabled PARKING_DEAL_NEARBY.
+# Expected result: BLOCKED (Reason: USER_OVERRIDE)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u5}}",
+  "notificationTypeCode": "PARKING_DEAL_NEARBY",
+  "channel": "PUSH",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+### 3.8 RULE: User Override (Explicit Opt-In for Default-Off type)
+# Social likes are default OFF, but user 1005 turned them ON.
+# Expected result: ALLOWED (Reason: USER_OVERRIDE)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u5}}",
+  "notificationTypeCode": "SOCIAL_NEW_LIKE",
+  "channel": "PUSH",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+### 3.9 RULE: Default Rule (If no settings/overrides exist)
+# User 1001 vs Social Likes.
+# Expected result: BLOCKED (Reason: DEFAULT)
+POST {{baseUrl}}/internal/preferences/evaluate
+Content-Type: application/json
+
+{
+  "userId": "{{u1}}",
+  "notificationTypeCode": "SOCIAL_NEW_LIKE",
+  "channel": "PUSH",
+  "currentTime": "2024-05-20T12:00:00Z"
+}
+
+
+### ==========================================
+### 4. MANAGEMENT & UPDATE ENDPOINTS
+### ==========================================
+
+### 4.1 Update Notification Type (Catalog)
+# Update Global default enabled to true for social
+PUT {{baseUrl}}/admin/notification-types/SOCIAL_NEW_LIKE
+Content-Type: application/json
+
+{
+  "code": "SOCIAL_NEW_LIKE",
+  "appId": "tolo-social",
+  "channel": "PUSH",
+  "category": "SOCIAL",
+  "defaultEnabled": true,
+  "mandatory": false,
+  "status": "ACTIVE"
+}
+
+### 4.2 Deprecate Login OTP (Admin Action)
+PATCH {{baseUrl}}/admin/notification-types/LOGIN_OTP/deprecate
+
+### 4.3 Get User Channel Config
+GET {{baseUrl}}/users/{{u3}}/channels
+
+### 4.4 Delete User Override
+# Revert User 1005's choice for Social Likes to global default
+DELETE {{baseUrl}}/users/{{u5}}/notifications/SOCIAL_NEW_LIKE
+
+### 4.5 Get Effective Context (Combined State)
+# View everything affecting User 1003's PUSH settings for Queue
+POST {{baseUrl}}/internal/preferences/effective
+Content-Type: application/json
+
+{
+  "userId": "{{u3}}",
+  "notificationTypeCode": "QUEUE_READY",
+  "channel": "PUSH"
+}
