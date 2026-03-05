@@ -1,0 +1,101 @@
+### Template Service API Test Suite
+
+@baseUrl = http://localhost:8094/notification-template/template
+
+### 1. Create a logical Template
+# Scenario: Initialize a new template registry entry for an application
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "applicationCode": "TOLO_PARK",
+  "templateCode": "BOOKING_CONFIRMED",
+  "description": "Sent when a user successfully completes a parking booking"
+}
+
+> {% client.global.set("templateId", response.body.id); %}
+
+### 1. Create a logical Template
+# Scenario: Initialize a new template registry entry for an application
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "applicationCode": "TOLO_PARK",
+  "templateCode": "BOOKING_FINISHED",
+  "description": "Sent when a user successfully completes a parking"
+}
+
+### 2. Get All Templates
+# Scenario: List all templates in the system
+GET {{baseUrl}}
+Accept: application/json
+
+### 3. Get Specific Template
+# Scenario: Fetch details of the template we just created
+GET {{baseUrl}}/{{templateId}}
+Accept: application/json
+
+### 4. Create Version 1 (Draft)
+# Scenario: Add the first message variant (Email, English)
+POST {{baseUrl}}/{{templateId}}/versions/1
+Content-Type: application/json
+
+{
+  "channel": "EMAIL",
+  "locale": "en",
+  "subject": "Booking Confirmed: {{bookingRef}}",
+  "body": "Hi {{userName}}, your booking at {{location}} is confirmed for {{time}}.",
+  "engine": "HANDLEBARS"
+}
+
+### 5. Create Version 1 (Draft) - SMS Variant
+# Scenario: Add an SMS variant for the same version
+POST {{baseUrl}}/{{templateId}}/versions/1
+Content-Type: application/json
+
+{
+  "channel": "SMS",
+  "locale": "en",
+  "subject": null,
+  "body": "ToloPark: Booking {{bookingRef}} confirmed for {{time}}.",
+  "engine": "HANDLEBARS"
+}
+
+### 6. List All Versions for Template
+# Scenario: Check the draft versions created
+GET {{baseUrl}}/{{templateId}}/versions
+Accept: application/json
+
+### 7. Publish Version 1
+# Scenario: Go live with Version 1 (updates activeVersionNumber and evicts cache)
+PATCH {{baseUrl}}/{{templateId}/publish/1
+Content-Type: application/json
+
+### 8. Create Version 2 (Draft - Future Update)
+# Scenario: Preparing a new update without affecting Version 1
+POST {{baseUrl}}/{{templateId}}/versions/2
+Content-Type: application/json
+
+{
+  "channel": "EMAIL",
+  "locale": "en",
+  "subject": "[New] Booking Confirmed: {{bookingRef}}",
+  "body": "Hello {{userName}}, we are happy to confirm your booking at {{location}}.",
+  "engine": "HANDLEBARS"
+}
+
+### 9. Update Template Metadata
+# Scenario: Update the description of the template
+PUT {{baseUrl}}/{{templateId}}
+Content-Type: application/json
+
+{
+  "applicationCode": "TOLO_PARK",
+  "templateCode": "BOOKING_CONFIRMED",
+  "description": "Updated description for the booking notification"
+}
+
+### 10. Delete Template
+# Scenario: Cleanup (Warning: This will cascade delete versions)
+# DELETE {{baseUrl}}/{{templateId}}

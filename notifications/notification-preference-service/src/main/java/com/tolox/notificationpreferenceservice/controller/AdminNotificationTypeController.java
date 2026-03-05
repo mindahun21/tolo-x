@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/notification-types")
+@RequestMapping("/notification-preference/admin/notification-types")
 @RequiredArgsConstructor
 public class AdminNotificationTypeController {
     private final AdminNotificationTypeService service;

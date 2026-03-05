@@ -1,0 +1,15 @@
+spring:
+  r2dbc:
+    username: ${TEMPLATE_SERVICE_DATASOURCE_USERNAME}
+    password: ${TEMPLATE_SERVICE_DATASOURCE_PASSWORD}
+    url: ${TEMPLATE_SERVICE_DATASOURCE_URL}
+  flyway:
+    url: ${TEMPLATE_SERVICE_FLYWAY_DATASOURCE_URL}
+    user: ${TEMPLATE_SERVICE_DATASOURCE_USERNAME}
+    password: ${TEMPLATE_SERVICE_DATASOURCE_PASSWORD}
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+
+server:
+  port: 8094

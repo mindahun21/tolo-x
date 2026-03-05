@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/internal/preferences")
+@RequestMapping("/notification-preference/internal/preferences")
 @RequiredArgsConstructor
 public class PreferenceController {
     private final PreferenceService preferenceService;

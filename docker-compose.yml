@@ -31,6 +31,23 @@ services:
       - tolo-x-db-postgres
     restart: unless-stopped
 
+  template-db:
+    container_name: template-db
+    image: postgres
+    environment:
+      POSTGRES_USER: template_user
+      POSTGRES_PASSWORD: template_pass
+      POSTGRES_DB: template_db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - template-db:/var/lib/postgresql/data
+    ports:
+      - 12347:5432
+    networks:
+      - tolo-x-db-postgres
+    restart: unless-stopped
+
+
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
@@ -70,3 +87,4 @@ networks:
 volumes:
   db-postgres:
   notification-preference-db:
+  template-db:

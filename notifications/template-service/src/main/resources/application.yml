@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: template-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL}
+  cloud:
+    config:
+      retry:
+        retry:
+          initial-interval: 2000
+          max-attempts: 6
+          max-interval: 10000
+          multiplier: 1.5
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}

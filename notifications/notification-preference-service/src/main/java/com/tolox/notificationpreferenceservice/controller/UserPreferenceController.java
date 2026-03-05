@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/users/{userId}")
+@RequestMapping("/notification-preference/users/{userId}")
 @RequiredArgsConstructor
 public class UserPreferenceController {
     private final UserPreferenceService service;
