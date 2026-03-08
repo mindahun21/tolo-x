@@ -1,137 +1,58 @@
-# Notification API Service Design
+# Notification API Service Overview
 
 ## Why This Service Must Exist
 
-The Notification API Service is a mandatory system boundary component. It exists to protect downstream notification infrastructure and enforce consistent notification contracts across all producers.
+The Notification API Service is the mandatory entry point for the entire notification ecosystem. It serves as a protective layer between upstream business applications (like Auth, Orders, Inventory) and the downstream delivery infrastructure.
 
-In production notification systems, clients must never publish events directly to Kafka or messaging infrastructure.
+In a mature distributed architecture, business services should never directly interact with messaging queues (Kafka) or a rendering engine. This service provides a clean, unified REST interface that handles the complexities of the notification lifecycle.
 
 This service acts as:
-- Security gatekeeper
-- Validation layer
-- Event normalization layer
-- Observability and audit entry point
-
-Removing this component introduces security, reliability, and maintainability risks.
+- **Security Gatekeeper**: Verifies that the calling application has the authority to send notifications.
+- **Validation Layer**: Rejects malformed or incomplete requests at the edge.
+- **Event Normalization**: Standardizes diverse incoming payloads into a single "Notification Event" format.
+- **Async Bridge**: Decouples the low-latency HTTP request from the high-throughput Kafka backbone.
 
 ---
 
 ## What This Service Must Do
 
-### Request Validation
-The service must validate:
-- Notification type existence
-- Required payload fields
-- Allowed channels
-- Template availability
-
-Invalid requests must be rejected before publishing events.
-
----
-
-### Authentication and Authorization
-The service must verify:
-- Client identity
-- Tenant permissions
-- Service-level access rights
-
-Unauthorized requests must be blocked.
-
----
-
-### Business Rule Enforcement
-The service must enforce:
-- User notification preferences
-- Channel restrictions
-- Compliance rules
-- Rate limits
-
-These rules must be applied before event publishing.
-
----
+### Request Validation & Logic
+- **Application Identification**: Verify the `applicationCode` (e.g., TOLO_PARK, TOLO_AUTH).
+- **Template Verification**: Ensure the requested `templateCode` exists and is valid for the given application.
+- **Payload Validation**: Check that the business `data` provided contains all the variables required by the template (using the Variable Discovery API of the Template Service).
+- **Fail Fast**: Reject requests before they reach Kafka if they are destined to fail later.
 
 ### Event Normalization
-The service must convert all incoming requests into a single standardized event format before sending to Kafka.
-
-All downstream services must consume only standardized events.
-
----
+- Construct a standardized **Notification Event** object containing:
+    - Unique `eventId` (UUID) for tracking and idempotency.
+    - Application & Template context.
+    - Recipient details (User ID, Channel, Locale).
+    - Normalized business data map.
+    - Metadata (High Priority vs. Bulk).
 
 ### Idempotency Protection
-The service must guarantee idempotent request handling.
-
-Duplicate requests must not produce duplicate notifications.
-
-Each request must generate or verify a unique event identifier.
-
----
+- Generate and store a request fingerprint to prevent the same notification from being sent twice if a client retries a successful request.
 
 ### Kafka Event Publishing
-The service must:
-- Publish events asynchronously to Kafka
-- Confirm publish success before responding to clients
-- Use userId or tenantId as partition keys
+- Publish normalized events to the `notification.raw.events` topic.
+- Use the `userId` as the Kafka partition key to ensure all notifications for a single user are processed in the correct order.
 
-The service must not perform notification delivery directly.
-
----
-
-### Logging and Observability
-The service must record:
-- Request metadata
-- Event publishing results
-- Failure reasons
-
-Audit traceability is mandatory.
+### Audit Logging
+- Record the intake status of every request in the dedicated **Notification API Database**.
 
 ---
 
 ## What This Service Must Not Do
 
-The Notification API Service must NOT:
-
-- Send notifications directly to providers
-- Render notification templates
-- Perform campaign segmentation
-- Execute long-running business workflows
-- Maintain provider-specific logic
-- Contain channel delivery implementations
-
-These responsibilities belong to downstream processing services.
+To maintain high performance and separation of concerns, this service **MUST NOT**:
+- **Render Templates**: Content generation is handled by the Processor.
+- **Fetch User Preferences**: This happens later in the Processor to ensure the most up-to-date data is used.
+- **Call External Providers**: It never talks to Twilio, SendGrid, etc.
+- **Execute Business Logic**: It doesn't decide *who* gets a notification, only *how* to accept the request.
 
 ---
 
-## Security Requirements
-
-The service must:
-- Sanitize all inputs
-- Enforce request rate limits
-- Prevent unauthorized message publishing
-- Support tenant isolation
-
-Security enforcement must happen at the API boundary.
-
----
-
-## Scalability Requirements
-
-The service must be stateless.
-
-The service must:
-- Support horizontal scaling
-- Handle high request concurrency
-- Remain lightweight and fast
-
-Stateful business processing is prohibited.
-
----
-
-## Core Responsibility Statement
-
-The Notification API Service is strictly responsible for:
-- Validation
-- Security enforcement
-- Event normalization
-- Kafka event publishing
-
-Nothing else.
+## Scalability & Security
+- **Stateless Design**: Allows for effortless horizontal scaling during traffic spikes.
+- **Rate Limiting**: Protects downstream services from being flooded by a single malfunctioning or malicious application.
+- **Application Isolation**: Ensures that one app (e.g., Marketing) cannot use templates belonging to another app (e.g., Auth).

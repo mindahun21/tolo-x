@@ -1,103 +1,102 @@
-# Template Service: API Contract
+# Template Service: API Contract (v2 - Implemented)
 
-This document defines the API benchmarks for the Template Service, covering the high-throughput rendering API (Internal) and the management APIs (Admin).
+This document defines the REST API contract for the Template Service. It distinguishes between high-performance rendering (internal), content discovery, and administrative management.
+
+**Base Path**: `/notification-template`
 
 ---
 
-## 1. Internal Rendering API (Internal Gateway)
-Used by the **Notification Processor Service** to fetch and render content.
+## 1. Internal Rendering API
+Used by the **Notification Processor Service** to generate the final message content for delivery.
 
-### Render Template
-`POST /internal/templates/render`
-
-#### Request Schema
+### Render Template (Active Version)
+`POST /template/render`
+*   **Purpose**: Resolves the "Active" version for the given channel/locale and renders it.
+*   **Request Body**:
 ```json
 {
-  "applicationCode": "TOLO_PARK",
-  "templateCode": "BOOKING_CONFIRMED",
+  "applicationCode": "TOLO_AUTH",
+  "templateCode": "SECURITY_ALERT",
   "channel": "EMAIL",
-  "locale": "en_US",
+  "locale": "en",
   "data": {
-    "userName": "John Doe",
-    "bookingRef": "ABC-123",
-    "expiryDate": "2026-04-01"
+    "userName": "Mindahun",
+    "location": "Addis Ababa"
   }
 }
 ```
+*   **Notes**: 
+    *   Automatically injects global assets into the rendering context (accessible via `[[${assets.KEY}]]`).
+    *   Implements localization fallback (e.g., `en_US` -> `en` -> `application default`).
 
-#### Response (Success)
+---
+
+## 2. Variable Discovery API
+Used by upstream services to understand what business data (placeholders) a template requires.
+
+### Discover Variables (Active Version)
+`GET /template/{templateId}/variables`
+
+### Discover Variables (Target Version)
+`GET /template/{templateId}/versions/{versionNumber}/variables`
+
+*   **Response Schema**:
 ```json
 {
-  "subject": "Booking Confirmed: ABC-123",
-  "body": "<html>Hello John Doe, your booking...</html>",
-  "versionNumber": 4,
-  "locale": "en_US",
-  "renderedAt": "2026-03-03T12:00:00Z"
+  "channelVariables": {
+    "EMAIL": ["userName", "location"],
+    "SMS": ["userName"]
+  },
+  "aggregatedVariables": ["userName", "location"]
 }
 ```
-
-#### Error Responses
-*   `404 NOT_FOUND`: Template or version does not exist.
-*   `400 BAD_REQUEST`: Missing mandatory variables for rendering.
-*   `422 UNPROCESSABLE_ENTITY`: Template syntax error (e.g., broken Handlebars tags).
+*   **Note**: This API **filters out** `assets.*` variables, as those are handled automatically by the service.
 
 ---
 
-## 2. Template Registry APIs (Admin)
-Manage the logical templates (the "containers").
+## 3. Global Asset Management
+Manages shared assets (logos, URLs, branding) that change independently of templates.
 
-### Create Template
-`POST /admin/templates`
-*   **Request**: `{ "applicationCode": "STRING", "templateCode": "STRING", "description": "STRING" }`
+### List All Assets
+`GET /assets`
 
-### List All Templates
-`GET /admin/templates?appCode=TOLO_PARK`
-
-### Get Template Details
-`GET /admin/templates/{id}`
-
----
-
-## 3. Version Management APIs (Admin)
-Manage the immutable content snapshots.
-
-### Create New Version (Draft)
-`POST /admin/templates/{templateId}/versions`
-*   **Request**:
+### Create/Update Asset
+`POST /assets` | `PUT /assets/{id}`
 ```json
 {
-  "channel": "EMAIL",
-  "locale": "en",
-  "subject": "Hello {{userName}}",
-  "body": "Welcome to Tolo-X!",
-  "engine": "HANDLEBARS"
+  "assetKey": "COMPANY_LOGO",
+  "assetUrl": "https://cdn.tolo-x.com/logo.png",
+  "description": "Global header logo"
 }
 ```
-*   **Note**: This automatically increments the version number but sets `status=DRAFT`.
-
-### Get Particular Version
-`GET /admin/templates/{templateId}/versions/{versionNumber}`
-
-### Publish a Version
-`PATCH /admin/templates/{templateId}/publish/{versionNumber}`
-*   **Action**: Updates the Template's `activeVersionNumber` and triggers cache invalidation across all pods.
-
-### Rollback to Previous Version
-`PATCH /admin/templates/{templateId}/rollback/{versionNumber}`
-*   **Action**: Same as Publish, but typically used to move backwards in history.
+*   **Cache Invalidation**: Updating an asset automatically evicts the global asset registry from the hierarchical cache.
 
 ---
 
-## 4. Localization Fallback Rules
-When a request for `locale=en_US` arrives:
-1.  Search for exactly `en_US`.
-2.  Search for `en`.
-3.  Search for the system default (e.g., `en`).
-4.  If still missing, return `404`.
+## 4. Administrative Management (CRUD)
+
+### Template Registry
+*   `POST /template`: Create new logical template.
+*   `GET /template`: List all templates.
+*   `GET /template/{id}`: Get metadata.
+*   `PUT /template/{id}`: Update metadata.
+
+### Versioning & Publishing
+*   `POST /template/{templateId}/versions/{versionNumber}`: Create a specific version/channel variant.
+*   `GET /template/{templateId}/versions`: List all version history.
+*   `PATCH /template/{templateId}/publish/{versionNumber}`: Set a version as "ACTIVE" globally.
+*   `POST /template/{templateId}/versions/{versionNumber}/preview`: Render a specific version (even if DRAFT) for UI testing.
 
 ---
 
-## 5. Performance Targets
-*   **Render Latency**: Target `< 10ms` for cache hits.
-*   **Throughput**: Scale to `5000+ RPS` via reactive non-blocking architecture.
-*   **Availability**: Fallback to DB during Redis downtime must not exceed `50ms` latency.
+## 5. Implementation Status & [TODOs]
+
+| Feature | Status | Notes |
+| :--- | :--- | :--- |
+| **Hierarchical Caching** | ✅ DONE | L1 (Caffeine) + L2 (Redis) implemented. |
+| **Asset Injection** | ✅ DONE | Automatic injection of `assets.*` into all renders. |
+| **Localization Fallback** | ✅ DONE | Smart fallback (language_COUNTRY -> language -> generic). |
+| **Handlebars Engine** | ⚠️ TODO | Engine defined in enum, but implementation pending. |
+| **Rollback API** | ⚠️ TODO | Use `publish` for now, but need specific `/rollback` for auditing. |
+| **Tenant Isolation** | ⚠️ TODO | Currently uses `applicationCode`, but multi-tenant DB schema needed. |
+| **API Path Prefixing** | ⚠️ TODO | Standardize `/admin` vs `/internal` at the Gateway level. |

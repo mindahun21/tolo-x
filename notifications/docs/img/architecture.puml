@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+skinparam componentStyle uml2
+skinparam backgroundColor #ffffff
+skinparam sequenceMessageAlign center
+
+package "External Ecosystem" {
+    [Auth Service] as auth
+    [Order Service] as order
+    [Inventory Service] as inventory
+}
+
+package "Notification Platform (Microservices)" {
+    
+    package "Public Interface" {
+        [Notification API] as api
+        database "Notification API DB" as api_db #LightBlue
+    }
+
+    package "Bulk Orchestration" {
+        [Campaign Service] as campaign
+        database "Campaign DB" as campaign_db #LightBlue
+    }
+
+    package "Message Backbone" {
+        queue "Kafka Topic: raw.events" as kafka
+    }
+
+    package "Rule Engine & Delivery" {
+        [Notification Processor] as processor
+        database "Processor DB" as processor_db #LightBlue
+        
+        [Preference Service] as pref
+        database "Preference DB" as pref_db #LightBlue
+    }
+
+    package "Content & Branding" {
+        [Template Service] as template
+        database "Template DB" as template_db #LightBlue
+    }
+
+    package "Global Performance" {
+        database "Redis (L1/L2 Cache)" as redis #Orange
+    }
+}
+
+package "External Channels" {
+    cloud "SendGrid (Email)" as email
+    cloud "Twilio (SMS)" as sms
+    cloud "Firebase (Push)" as push
+}
+
+' --- Local Storage Connections ---
+api -down-> api_db : "State/Audit"
+campaign -down-> campaign_db : "Campaign State"
+processor -down-> processor_db : "Deduplication/Status"
+pref -down-> pref_db : "User Rules"
+template -down-> template_db : "Metadata/Assets"
+
+' --- Flow & Communication ---
+
+' 1. Intake
+auth -down-> api : "1. Request"
+order -down-> api : "1. Request"
+inventory -down-> api : "1. Request"
+campaign -right-> api : "1. Bulk (Throttled)"
+
+' 2. Validation
+api -right-> pref : "2. Policy Check"
+api -down-> kafka : "3. Publish Normalized Event"
+
+' 3. Consumer Loop
+kafka -down-> processor : "4. Consume"
+
+' 4. Final Processing (External Service Calls)
+processor -left-> pref : "5. Final Opt-out"
+processor -right-> template : "6. Fetch & Render"
+
+' 5. Cache Layer
+template -up-> redis : "Cache Hit"
+pref -up-> redis : "Cache Hit"
+
+' 6. Final Delivery
+processor -down-> email : "7. HTML/Text"
+processor -down-> sms : "7. Text"
+processor -down-> push : "7. Data"
+
+@enduml
