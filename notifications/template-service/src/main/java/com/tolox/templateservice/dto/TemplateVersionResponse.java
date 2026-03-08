@@ -1,7 +1,7 @@
 package com.tolox.templateservice.dto;
 
 import com.tolox.templateservice.enums.ChannelType;
-import com.tolox.templateservice.enums.TemplateEngine;
+import com.tolox.templateservice.enums.TemplateEngineEnum;
 import com.tolox.templateservice.enums.VersionStatus;
 
 import java.time.Instant;
@@ -15,7 +15,7 @@ public record TemplateVersionResponse(
         String locale,
         String subject,
         String body,
-        TemplateEngine engine,
+        TemplateEngineEnum engine,
         VersionStatus status,
         Instant createdAt
 ) {}

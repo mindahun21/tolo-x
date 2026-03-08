@@ -1,10 +1,11 @@
 ### Template Service API Test Suite
 
-@baseUrl = http://localhost:8094/notification-template/template
+@rootUrl = http://localhost:8094/notification-template
+@templateBase = {{rootUrl}}/template
+@assetBase = {{rootUrl}}/assets
 
 ### 1. Create a logical Template
-# Scenario: Initialize a new template registry entry for an application
-POST {{baseUrl}}
+POST {{templateBase}}
 Content-Type: application/json
 
 {
@@ -15,87 +16,109 @@ Content-Type: application/json
 
 > {% client.global.set("templateId", response.body.id); %}
 
-### 1. Create a logical Template
-# Scenario: Initialize a new template registry entry for an application
-POST {{baseUrl}}
-Content-Type: application/json
-
-{
-  "applicationCode": "TOLO_PARK",
-  "templateCode": "BOOKING_FINISHED",
-  "description": "Sent when a user successfully completes a parking"
-}
-
 ### 2. Get All Templates
-# Scenario: List all templates in the system
-GET {{baseUrl}}
+GET {{templateBase}}
 Accept: application/json
 
 ### 3. Get Specific Template
-# Scenario: Fetch details of the template we just created
-GET {{baseUrl}}/{{templateId}}
+GET {{templateBase}}/{{templateId}}
 Accept: application/json
 
 ### 4. Create Version 1 (Draft)
-# Scenario: Add the first message variant (Email, English)
-POST {{baseUrl}}/{{templateId}}/versions/1
+POST {{templateBase}}/{{templateId}}/versions/1
 Content-Type: application/json
 
 {
   "channel": "EMAIL",
   "locale": "en",
-  "subject": "Booking Confirmed: {{bookingRef}}",
-  "body": "Hi {{userName}}, your booking at {{location}} is confirmed for {{time}}.",
-  "engine": "HANDLEBARS"
+  "subject": "Booking Confirmed: [[${bookingRef}]]",
+  "body": "Hi [[${userName}]], your booking at [[${location}]] is confirmed for [[${time}]].",
+  "engine": "THYMELEAF"
 }
 
-### 5. Create Version 1 (Draft) - SMS Variant
-# Scenario: Add an SMS variant for the same version
-POST {{baseUrl}}/{{templateId}}/versions/1
+### 5. Publish Version 1
+PATCH {{templateBase}}/{{templateId}}/publish/1
 Content-Type: application/json
 
-{
-  "channel": "SMS",
-  "locale": "en",
-  "subject": null,
-  "body": "ToloPark: Booking {{bookingRef}} confirmed for {{time}}.",
-  "engine": "HANDLEBARS"
-}
-
-### 6. List All Versions for Template
-# Scenario: Check the draft versions created
-GET {{baseUrl}}/{{templateId}}/versions
-Accept: application/json
-
-### 7. Publish Version 1
-# Scenario: Go live with Version 1 (updates activeVersionNumber and evicts cache)
-PATCH {{baseUrl}}/{{templateId}/publish/1
-Content-Type: application/json
-
-### 8. Create Version 2 (Draft - Future Update)
-# Scenario: Preparing a new update without affecting Version 1
-POST {{baseUrl}}/{{templateId}}/versions/2
-Content-Type: application/json
-
-{
-  "channel": "EMAIL",
-  "locale": "en",
-  "subject": "[New] Booking Confirmed: {{bookingRef}}",
-  "body": "Hello {{userName}}, we are happy to confirm your booking at {{location}}.",
-  "engine": "HANDLEBARS"
-}
-
-### 9. Update Template Metadata
-# Scenario: Update the description of the template
-PUT {{baseUrl}}/{{templateId}}
+### 6. Render EMAIL (Active Version)
+POST {{templateBase}}/render
 Content-Type: application/json
 
 {
   "applicationCode": "TOLO_PARK",
   "templateCode": "BOOKING_CONFIRMED",
-  "description": "Updated description for the booking notification"
+  "channel": "EMAIL",
+  "locale": "en",
+  "data": {
+    "userName": "Mindahun",
+    "bookingRef": "ABC-123",
+    "location": "Addis Ababa",
+    "time": "12:00 PM"
+  }
 }
 
-### 10. Delete Template
-# Scenario: Cleanup (Warning: This will cascade delete versions)
-# DELETE {{baseUrl}}/{{templateId}}
+### 7. Create Security Alert Template
+POST {{templateBase}}
+Content-Type: application/json
+
+{
+  "applicationCode": "TOLO_AUTH",
+  "templateCode": "SECURITY_ALERT_V2",
+  "description": "Critical security alert for new logins"
+}
+
+> {% client.global.set("alertTemplateId", response.body.id); %}
+
+### 8. Create Email Version 1 (DRAFT)
+POST {{templateBase}}/{{alertTemplateId}}/versions/3
+Content-Type: application/json
+
+{
+  "channel": "EMAIL",
+  "locale": "en",
+  "subject": "Security Alert: New Login Detected",
+  "body": "Hi [[${userName}]], login from [[${location}]]. Use [[${assets.COMPANY_LOGO}]]",
+  "engine": "THYMELEAF",
+  "status": "DRAFT"
+}
+
+### 9. Get variables (Filters out assets.*)
+GET {{templateBase}}/{{alertTemplateId}}/versions/3/variables
+Content-Type: application/json
+
+### 10. Preview Version 1 (DRAFT)
+POST {{templateBase}}/{{alertTemplateId}}/versions/3/preview
+Content-Type: application/json
+
+{
+  "channel": "EMAIL",
+  "locale": "en",
+  "data": {
+    "userName": "Mindahun",
+    "location": "Addis Ababa"
+  }
+}
+
+### 11. List Global Assets
+GET {{assetBase}}
+Content-Type: application/json
+
+### 12. Create a new Asset
+POST {{assetBase}}
+Content-Type: application/json
+
+{
+  "assetKey": "BANNER_PROMO",
+  "assetUrl": "https://tolo-x.com/promo.png",
+  "description": "Global promo banner"
+}
+
+### 13. Update an Asset (DANGER: Copy actual ID from Request 11)
+PUT {{assetBase}}/a4734aba-d22f-4e6f-8efd-95c69dcbcfb0
+Content-Type: application/json
+
+{
+  "assetKey": "COMPANY_LOGO",
+  "assetUrl": "https://tolo-x.com/brand/new-logo-v3.png",
+  "description": "Updated brand logo"
+}

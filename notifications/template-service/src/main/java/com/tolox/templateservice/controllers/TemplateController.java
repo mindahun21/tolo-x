@@ -1,9 +1,7 @@
 package com.tolox.templateservice.controllers;
 
-import com.tolox.templateservice.dto.TemplateRequest;
-import com.tolox.templateservice.dto.TemplateResponse;
-import com.tolox.templateservice.dto.TemplateVersionRequest;
-import com.tolox.templateservice.dto.TemplateVersionResponse;
+import com.tolox.templateservice.dto.*;
+import com.tolox.templateservice.services.RenderingService;
 import com.tolox.templateservice.services.TemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +17,7 @@ import java.util.UUID;
 public class TemplateController {
 
     private final TemplateService templateService;
+    private final RenderingService renderingService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -68,5 +67,34 @@ public class TemplateController {
             @PathVariable UUID templateId,
             @PathVariable Integer versionNumber) {
         return templateService.publishVersion(templateId, versionNumber);
+    }
+
+    // --- Variable Discovery ---
+
+    @GetMapping("/{id}/variables")
+    public Mono<VariableDiscoveryResponse> discoverActiveVariables(@PathVariable UUID id) {
+        return templateService.discoverVariables(id);
+    }
+
+    @GetMapping("/{id}/versions/{versionNumber}/variables")
+    public Mono<VariableDiscoveryResponse> discoverVersionVariables(
+            @PathVariable UUID id, 
+            @PathVariable Integer versionNumber) {
+        return templateService.discoverVariablesForVersion(id, versionNumber);
+    }
+
+    // --- Rendering & Preview ---
+
+    @PostMapping("/render")
+    public Mono<RenderResponse> render(@RequestBody RenderRequest request) {
+        return renderingService.render(request);
+    }
+
+    @PostMapping("/{templateId}/versions/{versionNumber}/preview")
+    public Mono<RenderResponse> preview(
+            @PathVariable UUID templateId,
+            @PathVariable Integer versionNumber,
+            @RequestBody RenderRequest request) {
+        return renderingService.preview(templateId, versionNumber, request);
     }
 }

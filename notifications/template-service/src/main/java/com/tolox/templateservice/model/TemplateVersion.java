@@ -1,7 +1,7 @@
 package com.tolox.templateservice.model;
 
 import com.tolox.templateservice.enums.ChannelType;
-import com.tolox.templateservice.enums.TemplateEngine;
+import com.tolox.templateservice.enums.TemplateEngineEnum;
 import com.tolox.templateservice.enums.VersionStatus;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -20,7 +20,7 @@ public record TemplateVersion(
         String locale,
         String subject,
         String body,
-        TemplateEngine engine,
+        TemplateEngineEnum engine,
         VersionStatus status,
         @CreatedDate Instant createdAt
 )implements Persistable<UUID> {
